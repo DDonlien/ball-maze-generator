@@ -71,7 +71,7 @@ Current work focuses on the TypeScript/Vite generator and viewer in `src/`. The 
 Latest known required checks:
 
 ```bash
-cd /Users/ddonlien/Documents/GitHub/ball-maze-tools/web-maze-builder
+cd web-maze-builder
 npm test
 npm run build
 ```

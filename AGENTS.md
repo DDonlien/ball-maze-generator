@@ -38,9 +38,9 @@ Read a tool's local docs before editing it:
 For `web-maze-builder`, always run:
 
 ```bash
-cd /Users/ddonlien/Documents/GitHub/ball-maze-tools/web-maze-builder
+cd web-maze-builder
 npm test
 npm run build
 ```
 
-If instructions elsewhere still mention `/Users/taobe/Documents/...` or the old `maze-builder` directory, treat that as an old path and use the current repository path above.
+Prefer relative paths (for example, `cd web-maze-builder`) so instructions work across different machines.

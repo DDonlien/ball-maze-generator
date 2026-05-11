@@ -7,7 +7,7 @@ These are the authoritative implementation rules for `web-maze-builder`.
 Always run after Maze Builder changes:
 
 ```bash
-cd /Users/ddonlien/Documents/GitHub/ball-maze-tools/web-maze-builder
+cd web-maze-builder
 npm test
 npm run build
 ```

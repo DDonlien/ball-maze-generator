@@ -17,7 +17,7 @@ The current authoritative implementation is the TypeScript/Vite tool in `src/`. 
 ## Run
 
 ```bash
-cd /Users/ddonlien/Documents/GitHub/ball-maze-tools/web-maze-builder
+cd web-maze-builder
 npm install
 npm run dev
 ```
@@ -27,7 +27,7 @@ The dev server uses port `43187`.
 ## Verify
 
 ```bash
-cd /Users/ddonlien/Documents/GitHub/ball-maze-tools/web-maze-builder
+cd web-maze-builder
 npm test
 npm run build
 ```

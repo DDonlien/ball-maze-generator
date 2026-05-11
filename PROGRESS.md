@@ -32,7 +32,7 @@ This repository is organized as a small suite of independent tools. Directory pr
 For active Maze Builder work:
 
 ```bash
-cd /Users/ddonlien/Documents/GitHub/ball-maze-tools/web-maze-builder
+cd web-maze-builder
 npm test
 npm run build
 ```
