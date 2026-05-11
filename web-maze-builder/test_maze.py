@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 def test_maze_layout():
-    """测试生成的迷宫布局是否符合requirement.md的要求。
+    """测试生成的迷宫布局是否符合 web-maze-builder/AGENTS.md 的核心要求。
     
     执行以下测试：
     1. 检查是否有且仅有一个起始轨道
@@ -21,13 +21,13 @@ def test_maze_layout():
     script_dir = Path(__file__).resolve().parent
     layout_path = Path("maze_layout.json")
     if not layout_path.exists():
-        # 尝试在 maze-builder 工具目录中查找
+        # 尝试在 web-maze-builder 工具目录中查找
         possible_path = script_dir / "maze_layout.json"
         if possible_path.exists():
             layout_path = possible_path
         else:
             print("错误: 找不到 maze_layout.json 文件")
-            print("请先运行 python3 maze-builder/maze_generator.py 生成迷宫")
+            print("请先运行 python3 web-maze-builder/maze_generator.py 生成迷宫")
             return False
     
     with open(layout_path, 'r', encoding='utf-8') as f:

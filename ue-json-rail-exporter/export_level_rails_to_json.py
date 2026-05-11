@@ -1,5 +1,5 @@
 """
-Export rail actors from the current Unreal level to maze-builder-compatible JSON.
+Export rail actors from the current Unreal level to web-maze-builder-compatible JSON.
 
 Expected scene structure can live under a persistent level or a streamed level.
 Actors are detected by Blueprint class/type prefix, not actor label:
@@ -25,7 +25,7 @@ except ImportError as exc:
 # ============================================================
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT_JSON = REPO_ROOT / "maze-builder" / "exported_level_rails.json"
+DEFAULT_OUTPUT_JSON = REPO_ROOT / "web-maze-builder" / "exported_level_rails.json"
 
 GRID_TO_WORLD = 16.0
 MAZE_ORIGIN_TOLERANCE_CM = 0.01
