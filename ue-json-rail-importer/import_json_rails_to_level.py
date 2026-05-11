@@ -1,5 +1,5 @@
 """
-Import a maze-builder JSON layout into the current Unreal level.
+Import a web-maze-builder JSON layout into the current Unreal level.
 
 Run inside Unreal Editor Python. The script reads maze_layout.json plus a rail
 reference CSV, places BP_Maze at world origin when configured, and places rails
@@ -28,8 +28,8 @@ except ImportError as exc:
 # ============================================================
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_LAYOUT_JSON = REPO_ROOT / "maze-builder" / "maze_layout.json"
-DEFAULT_RAIL_CONFIG_CSV = REPO_ROOT / "maze-builder" / "rail_config.csv"
+DEFAULT_LAYOUT_JSON = REPO_ROOT / "web-maze-builder" / "maze_layout.json"
+DEFAULT_RAIL_CONFIG_CSV = REPO_ROOT / "web-maze-builder" / "rail_config.csv"
 
 FOLDER_PATH = "GeneratedMazeRails"
 CLEAR_EXISTING_IN_FOLDER = True
