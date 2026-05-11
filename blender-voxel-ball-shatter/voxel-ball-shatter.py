@@ -50,6 +50,11 @@ RANDOM_SEED = 12345
 SEPARATE_TARGET_BLOCKS = 64
 SEPARATE_RANDOM_SEED = 12345
 
+# separate 切割网格的参考尺寸。
+# 例如球直径 25、颗粒度 1，则切割边界会落在模型最大直径的 1/25 倍位置。
+SEPARATE_REFERENCE_DIAMETER = 25
+SEPARATE_CUT_GRANULARITY = 1
+
 # ============================================================
 # 基础参数
 # ============================================================
@@ -1236,18 +1241,66 @@ def polygon_center(mesh, poly):
 
     return center
 
-def separate_axis_index(value, min_value, max_value, parts):
+def integer_segment_edges(total_units, parts):
+    total_units = max(1, int(total_units))
+    parts = max(1, int(parts))
+
+    if parts <= 1:
+        return [0, total_units]
+
+    base_size = total_units // parts
+    remainder = total_units % parts
+    edges = [0]
+    current = 0
+
+    for i in range(parts):
+        current += base_size + (1 if i < remainder else 0)
+        edges.append(current)
+
+    return edges
+
+def separate_granularity_step(bounds_size):
+    reference_diameter = max(float(SEPARATE_REFERENCE_DIAMETER), EPSILON)
+    granularity = max(float(SEPARATE_CUT_GRANULARITY), EPSILON)
+    max_span = max(
+        float(bounds_size.x),
+        float(bounds_size.y),
+        float(bounds_size.z),
+        EPSILON,
+    )
+
+    return max_span * granularity / reference_diameter
+
+def quantized_axis_edges(min_value, max_value, parts, step):
     if parts <= 1 or abs(max_value - min_value) < EPSILON:
+        return [min_value, max_value]
+
+    span = max_value - min_value
+    total_units = max(1, int(round(span / step)))
+    unit_edges = integer_segment_edges(total_units, parts)
+    edges = [
+        min_value + unit * step
+        for unit in unit_edges
+    ]
+    edges[0] = min_value
+    edges[-1] = max_value
+
+    return edges
+
+def separate_axis_index(value, edges):
+    if len(edges) <= 2:
         return 0
 
-    ratio = (value - min_value) / (max_value - min_value)
-    index = int(ratio * parts)
-    return min(parts - 1, max(0, index))
+    for index in range(len(edges) - 1):
+        if value < edges[index + 1] or index == len(edges) - 2:
+            return index
 
-def separate_partition_index(center, min_co, max_co, grid_shape):
-    ix = separate_axis_index(center.x, min_co.x, max_co.x, grid_shape[0])
-    iy = separate_axis_index(center.y, min_co.y, max_co.y, grid_shape[1])
-    iz = separate_axis_index(center.z, min_co.z, max_co.z, grid_shape[2])
+    return len(edges) - 2
+
+def separate_partition_index(center, axis_edges_by_axis, grid_shape):
+    ix = separate_axis_index(center.x, axis_edges_by_axis[0])
+    iy = separate_axis_index(center.y, axis_edges_by_axis[1])
+    iz = separate_axis_index(center.z, axis_edges_by_axis[2])
 
     return ix + iy * grid_shape[0] + iz * grid_shape[0] * grid_shape[1]
 
@@ -1386,15 +1439,21 @@ def build_separate_partitions(mesh):
     target_count = max(1, int(SEPARATE_TARGET_BLOCKS))
     base_count = separate_base_count(target_count)
     min_co, max_co = get_bounds(mesh)
-    grid_shape = separate_grid_shape(base_count, max_co - min_co)
+    bounds_size = max_co - min_co
+    grid_shape = separate_grid_shape(base_count, bounds_size)
+    granularity_step = separate_granularity_step(bounds_size)
+    axis_edges_by_axis = [
+        quantized_axis_edges(min_co.x, max_co.x, grid_shape[0], granularity_step),
+        quantized_axis_edges(min_co.y, max_co.y, grid_shape[1], granularity_step),
+        quantized_axis_edges(min_co.z, max_co.z, grid_shape[2], granularity_step),
+    ]
     partitions = {i: [] for i in range(base_count)}
 
     for poly in mesh.polygons:
         center = polygon_center(mesh, poly)
         index = separate_partition_index(
             center,
-            min_co,
-            max_co,
+            axis_edges_by_axis,
             grid_shape,
         )
         partitions[index].append(poly.index)
@@ -1422,7 +1481,8 @@ def build_separate_partitions(mesh):
 
     print(
         f"Separate partitions: {len(result)} "
-        f"(target {target_count}, grid {grid_shape[0]}x{grid_shape[1]}x{grid_shape[2]})"
+        f"(target {target_count}, grid {grid_shape[0]}x{grid_shape[1]}x{grid_shape[2]}, "
+        f"granularity step {round_f(granularity_step)})"
     )
     return result
 
