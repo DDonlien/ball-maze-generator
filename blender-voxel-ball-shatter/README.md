@@ -51,6 +51,8 @@ This script cannot run in normal system Python because it imports `bpy` and Blen
 - `RANDOM_SEED`: makes randomized merging repeatable.
 - `SEPARATE_TARGET_BLOCKS`: target number of pieces for `separate` mode. The script decomposes this into a near-cubic 3D grid.
 - `SEPARATE_RANDOM_SEED`: controls which adjacent pair is merged when `SEPARATE_TARGET_BLOCKS` is odd.
+- `SEPARATE_REFERENCE_DIAMETER`: virtual source diameter used for grid snapping in `separate` mode. For a 25-unit ball, use `25`.
+- `SEPARATE_CUT_GRANULARITY`: minimum cut/grid unit in that virtual diameter. With diameter `25` and granularity `1`, boundaries snap to `1/25` of the model's largest dimension.
 - `AXIS_NORMAL_THRESHOLD`: ignores faces that are not close to axis-aligned.
 
 ## Notes
@@ -74,5 +76,6 @@ Separate partitioning uses this layout:
 2. Prefer the factor triplet whose resulting cell sizes are closest to cube-like for the source object's bounding box.
 3. Assign larger factors to longer object axes, so elongated objects still get less stretched cells.
 4. Examples for near-cubic assets: `2 -> 2x1x1`, `4 -> 2x2x1`, `6 -> 3x2x1`, `8 -> 2x2x2`, `9 -> 3x3x1`, `64 -> 4x4x4`.
-5. Odd targets build the next even layout, then merge one random adjacent pair.
-6. If curved assets leave empty bounding-box cells, the largest populated surface partitions are split again until the target object count is reached when possible.
+5. Snap partition boundaries to the configured virtual granularity, independent of the model's actual Blender size.
+6. Odd targets build the next even layout, then merge one random adjacent pair.
+7. If curved assets leave empty bounding-box cells, the largest populated surface partitions are split again until the target object count is reached when possible.
