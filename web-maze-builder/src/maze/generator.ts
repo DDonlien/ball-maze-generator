@@ -92,13 +92,8 @@ const RIGHT_HANDED_L90_MODEL_OVERRIDES = new Set([
   "BP_Curve_L90_Borderless_O_X2_Y2_Z1_Rail",
 ]);
 
-const LEFT_HANDED_R90_MODEL_OVERRIDES = new Set([
-  "BP_Curve_R90_X3_Y3_Z1_Rail",
-]);
-
 function horizontalModelSideOverride(railId: string): "left" | "right" | null {
   if (RIGHT_HANDED_L90_MODEL_OVERRIDES.has(railId)) return "right";
-  if (LEFT_HANDED_R90_MODEL_OVERRIDES.has(railId)) return "left";
   return null;
 }
 

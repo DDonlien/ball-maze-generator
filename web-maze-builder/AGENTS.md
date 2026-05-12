@@ -124,7 +124,6 @@ Current asset-specific footprint/exit overrides exist for:
 
 - `BP_Curve_L90_X4_Y4_Z1_Rail`
 - `BP_Curve_L90_Borderless_O_X2_Y2_Z1_Rail`
-- `BP_Curve_R90_X3_Y3_Z1_Rail`
 
 Treat these as temporary compatibility patches. Prefer explicit CSV/config footprint metadata in the long term.
 

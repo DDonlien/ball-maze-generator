@@ -141,25 +141,43 @@ describe("TypeScript maze port", () => {
     expect(curve?.exitsLogic[0].LocalRot.y).toBe(-90);
   });
 
-  it("keeps Curve R90 X3 exit right while matching its left-side model footprint", () => {
+  it("keeps Curve R90 X3 exit and footprint on the right side", () => {
     const config = loadConfigFromCsv(railConfigCsv);
     const curve = config.get("BP_Curve_R90_X3_Y3_Z1_Rail");
     expect(curve?.exitsLogic[0].Pos.toDict()).toEqual({ x: 2, y: 3, z: 0 });
     expect(curve?.exitsLogic[0].LocalRot.y).toBe(90);
 
     const cells = calculateOccupiedCells("BP_Curve_R90_X3_Y3_Z1_Rail", new Vector3(0, 0, 0), new Vector3(3, 3, 1), 0);
-    expect(cells.some((cell) => cell[1] < 0)).toBe(true);
-    expect(cells.some((cell) => cell[1] > 0)).toBe(false);
+    expect(cells.some((cell) => cell[1] > 0)).toBe(true);
+    expect(cells.some((cell) => cell[1] < 0)).toBe(false);
   });
 
-  it("keeps turn footprints aligned with their exit side except known asset overrides", () => {
+  it("keeps the reported R90 X3 occupied side aligned after full absolute rotation", () => {
+    const rotAbs = { p: 270, y: 0, r: 270 };
+    const pos = new Vector3(0, -3, 0);
+    const sideDir = rotateByRot({ x: 0, y: 1, z: 0 }, rotAbs);
+    const cells = calculateOccupiedCellsWithRotAbs("BP_Curve_R90_X3_Y3_Z1_Rail", pos, new Vector3(3, 3, 1), rotAbs);
+    const axis = Math.abs(sideDir.x) > 0 ? 0 : Math.abs(sideDir.y) > 0 ? 1 : 2;
+    const sign = [sideDir.x, sideDir.y, sideDir.z][axis];
+    const offsets = cells.map((cell) => cell[axis] - pos.asTuple()[axis]);
+
+    expect({
+      axis,
+      sign,
+      hasExpectedSide: offsets.some((offset) => offset * sign > 0),
+      hasOppositeSide: offsets.some((offset) => offset * sign < 0),
+    }).toEqual({
+      axis,
+      sign,
+      hasExpectedSide: true,
+      hasOppositeSide: false,
+    });
+  });
+
+  it("keeps turn footprints aligned with their exit side", () => {
     const config = loadConfigFromCsv(railConfigCsv);
-    const footprintOverrides = new Set([
-      "BP_Curve_R90_X3_Y3_Z1_Rail",
-    ]);
 
     for (const rail of config.values()) {
-      if (footprintOverrides.has(rail.rowName)) continue;
       const horizontal = rail.rowName.includes("_L90_") || rail.rowName.includes("_R90_");
       const vertical = rail.rowName.includes("_U90_") || rail.rowName.includes("_D90_");
       if (!horizontal && !vertical) continue;

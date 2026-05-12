@@ -1,6 +1,6 @@
 # Maze Builder Progress
 
-Last updated: 2026-05-10
+Last updated: 2026-05-12
 
 ## Scope
 
@@ -51,7 +51,6 @@ Current work focuses on the TypeScript/Vite generator and viewer in `src/`. The 
 - Added known asset overrides:
   - `BP_Curve_L90_X4_Y4_Z1_Rail`
   - `BP_Curve_L90_Borderless_O_X2_Y2_Z1_Rail`
-  - `BP_Curve_R90_X3_Y3_Z1_Rail`
 - Reworked export direction so `Exit_Dir_Abs` is derived from `Exit_Rot_Abs`, not from position offset.
 - Reworked placement footprint calculation toward the correct model:
   - generate local footprint first,
@@ -60,6 +59,7 @@ Current work focuses on the TypeScript/Vite generator and viewer in `src/`. The 
 - Added `calculateLocalOccupiedCells`.
 - Added `calculateOccupiedCellsWithRotAbs`.
 - `placeRailV2` now uses `calculateOccupiedCellsWithRotAbs` for collision and bounds.
+- Removed the incorrect `BP_Curve_R90_X3_Y3_Z1_Rail` footprint override so R90 X3 occupied cells stay on the same side as its local exit before and after full `Rot_Abs`.
 
 ### Documentation
 
