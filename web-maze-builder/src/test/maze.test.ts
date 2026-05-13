@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import railConfigCsv from "../../rail_config.csv?raw";
 import { loadConfigFromCsv } from "../maze/csv";
 import { calculateOccupiedCells, calculateOccupiedCellsWithRotAbs, exitDirFromLocalRot, MazeGenerator, transformByRotAbs } from "../maze/generator";
+import { buildFamilyDisplayName, parseRailNameParts, railDirectionDisplayName, railFamilyDisplayName } from "../maze/railLibrary";
 import { MazeLayout, Vector3 } from "../maze/types";
 
 function expectedDirFromRot(rot: { p: number; y: number; r: number }): "+X" | "+Y" | "-X" | "-Y" | "+Z" | "-Z" {
@@ -82,6 +83,56 @@ describe("TypeScript maze port", () => {
     expect(rail?.cnName).toBe("直线轨道");
     expect(rail?.enName).toBe("Straight Rail");
     expect(rail?.displayName).toBe("Fallback Name");
+  });
+
+  it("parses build-library grouping from rail role names", () => {
+    expect(parseRailNameParts("BP_Straight_F_X1_Y1_Z1_Rail")).toEqual({
+      group: "Straight",
+      direction: "F",
+      descriptor: "Normal",
+      familyKey: "Straight|Normal|F",
+    });
+    expect(parseRailNameParts("BP_Straight_FR90_Borderless_Caved_X1_Y1_Z1_Rail")).toEqual({
+      group: "Straight",
+      direction: "FR90",
+      descriptor: "Borderless Caved",
+      familyKey: "Straight|Borderless Caved|FR90",
+    });
+    expect(parseRailNameParts("BP_Curve_R90_Borderless_L_X2_Y2_Z1_Rail")).toEqual({
+      group: "Curve",
+      direction: "R90",
+      descriptor: "Borderless L",
+      familyKey: "Curve|Borderless L|R90",
+    });
+  });
+
+  it("uses the first named size variant as the build-family display name", () => {
+    const config = loadConfigFromCsv([
+      "RowName,CN_Name,EN_Name,Diff_Base,Size,Exit_Array",
+      'BP_Straight_F_X1_Y1_Z1_Rail,直线轨道,Straight Rail,0,"(X=1,Y=1,Z=1)","((Pos=(X=16,Y=0,Z=0),BaseRot=(P=0,Y=0,R=0),SpinDiff=(X=1,Y=1,Z=1,W=1)))"',
+      'BP_Straight_F_X2_Y1_Z1_Rail,直线轨道,Straight Rail,0,"(X=2,Y=1,Z=1)","((Pos=(X=32,Y=0,Z=0),BaseRot=(P=0,Y=0,R=0),SpinDiff=(X=1,Y=1,Z=1,W=1)))"',
+    ].join("\n"));
+    const variants = [
+      config.get("BP_Straight_F_X1_Y1_Z1_Rail"),
+      config.get("BP_Straight_F_X2_Y1_Z1_Rail"),
+    ].filter((rail): rail is NonNullable<typeof rail> => rail !== undefined);
+
+    expect(railFamilyDisplayName(variants, "zh")).toBe("直线轨道");
+    expect(railFamilyDisplayName(variants, "en")).toBe("Straight Rail");
+    expect(buildFamilyDisplayName(variants, "F", "zh")).toBe("直线轨道");
+    expect(buildFamilyDisplayName(variants, "F", "en")).toBe("Straight Rail");
+  });
+
+  it("falls back to direction labels instead of blueprint names for unnamed build families", () => {
+    const config = loadConfigFromCsv([
+      "RowName,Diff_Base,Size,Exit_Array",
+      'BP_Straight_FR90_X1_Y1_Z1_Rail,0,"(X=1,Y=1,Z=1)","((Pos=(X=16,Y=16,Z=0),BaseRot=(P=0,Y=90,R=0),SpinDiff=(X=1,Y=1,Z=1,W=1)))"',
+    ].join("\n"));
+    const rail = config.get("BP_Straight_FR90_X1_Y1_Z1_Rail");
+
+    expect(railDirectionDisplayName("FR90", "zh")).toBe("前右 90");
+    expect(railDirectionDisplayName("FR90", "en")).toBe("Forward Right 90");
+    expect(buildFamilyDisplayName(rail ? [rail] : [], "FR90", "zh")).toBe("前右 90");
   });
 
   it("matches occupied cell behavior for a downward bump", () => {

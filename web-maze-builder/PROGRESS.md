@@ -1,6 +1,6 @@
 # Maze Builder Progress
 
-Last updated: 2026-05-12
+Last updated: 2026-05-13
 
 ## Scope
 
@@ -18,6 +18,7 @@ Current work focuses on the TypeScript/Vite generator and viewer in `src/`. The 
 - Added hover explanations for Generator labels.
 - Added click-to-lock Rail Detail.
 - Updated viewer number sprites to use a JetBrains Mono first font stack.
+- Updated Rail Library grouping to parse RowName segments as part, direction, descriptor, and size, with card names sourced from CN/EN config names when available and direction labels as fallback.
 
 ### Checkpoint Logic
 

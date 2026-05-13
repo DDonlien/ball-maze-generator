@@ -3,6 +3,7 @@ import railConfigCsv from "../rail_config.csv?raw";
 import sampleLayoutRaw from "../maze_layout.json?raw";
 import { loadConfigFromCsv } from "./maze/csv";
 import { calculateOccupiedCellsWithRotAbs, composeRotAbs, exitDirFromLocalRot, MazeGenerator, transformByRotAbs } from "./maze/generator";
+import { buildFamilyDisplayName, parseRailNameParts, railDisplayName } from "./maze/railLibrary";
 import { DEFAULT_GENERATOR_OPTIONS, GRID_TO_WORLD_SCALE } from "./maze/constants";
 import { MazeLayout, MazeRailJson, RailConfigItem, RotAbs, Vec3Dict, Vector3 } from "./maze/types";
 import { BuildExitTarget, EditorMode, MazeViewer, RailEditAction, RailMeta } from "./viewer/MazeViewer";
@@ -35,6 +36,7 @@ interface BuildRailFamily {
   key: string;
   group: BuildGroupId;
   descriptor: string;
+  direction: string;
   variants: RailConfigItem[];
 }
 
@@ -327,15 +329,9 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!);
 }
 
-function railDisplayName(rail: RailConfigItem): string {
-  return currentLanguage === "en"
-    ? rail.enName || rail.displayName || rail.cnName || rail.rowName
-    : rail.cnName || rail.displayName || rail.enName || rail.rowName;
-}
-
 function railDisplayNameById(railId: string): string {
   const rail = loadConfigFromCsv(csvText).get(railId);
-  return rail ? railDisplayName(rail) : railId;
+  return rail ? railDisplayName(rail, currentLanguage) : railId;
 }
 
 function railSizeValue(rail: RailConfigItem): number {
@@ -362,28 +358,20 @@ function familySizeOptionsMarkup(family: BuildRailFamily, activeRail: RailConfig
 }
 
 function classifyRailGroup(rail: RailConfigItem): BuildGroupId {
-  const lower = rail.rowName.toLowerCase();
-  if (lower.includes("straight")) return "straight";
-  if (lower.includes("curve")) return "curve";
-  if (lower.includes("bump")) return "bump";
-  if (lower.includes("tube") || lower.includes("box")) return "tube";
+  const group = parseRailNameParts(rail.rowName).group.toLowerCase();
+  if (group === "straight") return "straight";
+  if (group === "curve") return "curve";
+  if (group === "bump") return "bump";
+  if (group === "tube" || group === "box") return "tube";
   return "special";
 }
 
 function railFamilyKey(railId: string): string {
-  return railId.replace(/_X\d+_Y\d+_Z\d+(?=_Rail$)/, "");
+  return parseRailNameParts(railId).familyKey;
 }
 
 function railDescriptor(rail: RailConfigItem): string {
-  const noPrefix = railFamilyKey(rail.rowName).replace(/^BP_/, "").replace(/_Rail$/, "");
-  const tokens = noPrefix.split("_").filter(Boolean);
-  const directionTokens = new Set(["F", "L90", "R90", "U90", "D90", "FD", "FU", "FR90", "FL90", "T", "CR"]);
-  const description = tokens
-    .slice(1)
-    .filter((token) => !directionTokens.has(token))
-    .map((token) => token.charAt(0) + token.slice(1).toLowerCase())
-    .join(" ");
-  return description || "Normal";
+  return parseRailNameParts(rail.rowName).descriptor;
 }
 
 function compareRailSize(a: RailConfigItem, b: RailConfigItem): number {
@@ -399,7 +387,8 @@ function buildFamilies(): BuildRailFamily[] {
     const key = railFamilyKey(rail.rowName);
     const group = classifyRailGroup(rail);
     const descriptor = railDescriptor(rail);
-    const family = families.get(key) ?? { key, group, descriptor, variants: [] };
+    const direction = parseRailNameParts(rail.rowName).direction;
+    const family = families.get(key) ?? { key, group, descriptor, direction, variants: [] };
     family.variants.push(rail);
     families.set(key, family);
   }
@@ -468,7 +457,7 @@ function renderPartLibrary(): void {
       .map((family) => {
         const rail = railForFamilyDisplay(family);
         const selected = buildSelection?.familyKey === family.key;
-        const displayName = railDisplayName(rail);
+        const displayName = buildFamilyDisplayName(family.variants, family.direction, currentLanguage);
         const sizeOptions = familySizeOptionsMarkup(family, rail);
         return `
           <button class="part-tile ${selected ? "is-selected" : ""}" data-family-key="${escapeHtml(family.key)}" title="${escapeHtml(rail.rowName)}">
@@ -797,7 +786,7 @@ function selectBuildFamily(familyKey: string): void {
   renderRailDetail(null);
   renderPartLibrary();
   updateEditorStatus();
-  renderLog([{ kind: "info", message: `Build mode: ${railDisplayName(rail)} (${familySizeText(family, rail)}). Hover an open exit, wheel/1-4 switches size, R spins, X exits.` }]);
+  renderLog([{ kind: "info", message: `Build mode: ${railDisplayName(rail, currentLanguage)} (${familySizeText(family, rail)}). Hover an open exit, wheel/1-4 switches size, R spins, X exits.` }]);
 }
 
 function exitBuildMode(message?: string): void {
@@ -844,7 +833,7 @@ function switchBuildSize(slot: number): void {
     railId: variant.rowName,
     sizeIndex: index,
   };
-  buildPreviewMessage = `${familySizeText(family, variant)} · ${railDisplayName(variant)}.`;
+  buildPreviewMessage = `${familySizeText(family, variant)} · ${railDisplayName(variant, currentLanguage)}.`;
   renderRailDetail(null);
   renderPartLibrary();
   updateBuildPreview();
@@ -1187,7 +1176,7 @@ function updateEditorStatus(): void {
   if (buildSelection) {
     const family = findBuildFamily(buildSelection.familyKey);
     const rail = family?.variants[Math.min(buildSelection.sizeIndex, (family?.variants.length ?? 1) - 1)];
-    const name = rail ? railDisplayName(rail) : railDisplayNameById(buildSelection.railId);
+    const name = rail ? railDisplayName(rail, currentLanguage) : railDisplayNameById(buildSelection.railId);
     const sizeText = family && rail ? familySizeText(family, rail) : `Size ${buildSelection.sizeIndex + 1}`;
     editorStatus.textContent = `${name} · ${sizeText} · Spin ${buildSelection.spin * 90} · ${buildPreviewMessage}`;
     editorStatus.classList.remove("is-delete", "is-rotate");
