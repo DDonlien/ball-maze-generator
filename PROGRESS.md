@@ -1,6 +1,6 @@
 # Repository Progress
 
-Last updated: 2026-05-11
+Last updated: 2026-05-13
 
 ## Scope
 
@@ -14,6 +14,7 @@ This repository is organized as a small suite of independent tools. Directory pr
 | `web-hermite-spline-generator` | Usable | Vite web tool for Hermite curve parameter editing and CSV export. |
 | `ue-json-rail-exporter` | Usable | Exports rail and environment helper actors from the current UE level to Maze Builder-compatible JSON. |
 | `ue-json-rail-importer` | Usable | Imports Maze Builder JSON into UE and can fall back from Blueprint references to Static Mesh references. |
+| `ue-rail-content-checker` | New / Usable | Checks rail_config.csv Blueprint assets against expected Content Browser locations and reports missing or misplaced assets. |
 | `ue-asset-pivot-editor` | Usable | Bakes Static Mesh Pivot changes and can compensate selected level actors. |
 | `ue-material-instance-creator` | New / Usable | Creates Material Instances in the active Content Browser path from selected Materials using a fixed parent Material reference. |
 | `ue-texture-assigner` | Usable | Scans UE assets by naming convention and assigns Texture -> MI -> Static Mesh. |

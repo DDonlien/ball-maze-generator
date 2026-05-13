@@ -10,6 +10,7 @@ Ball Maze Tools 是为 Ball Maze / 迷宫球项目准备的一组开发辅助工
 | Hermite Spline Generator | Web / Vite | Hermite 曲线编辑、预览和 CSV 导出 | [`web-hermite-spline-generator/README.md`](web-hermite-spline-generator/README.md) |
 | JSON Rail Exporter | Unreal Editor Python | 从 UE 关卡导出 rail JSON | [`ue-json-rail-exporter/README.md`](ue-json-rail-exporter/README.md) |
 | JSON Rail Importer | Unreal Editor Python | 将 maze JSON 导入 UE 关卡 | [`ue-json-rail-importer/README.md`](ue-json-rail-importer/README.md) |
+| Rail Content Checker | Unreal Editor Python | 检查 `rail_config.csv` 声明的 BP 是否在 Content Browser 对应位置，报告 missing/misplaced | [`ue-rail-content-checker/README.md`](ue-rail-content-checker/README.md) |
 | Asset Pivot Editor | Unreal Editor Python | 批量烘焙 Static Mesh Pivot | [`ue-asset-pivot-editor/README.md`](ue-asset-pivot-editor/README.md) |
 | Material Instance Creator | Unreal Editor Python | 在当前 Content Browser 路径按选中 Material 批量创建材质实例 | [`ue-material-instance-creator/README.md`](ue-material-instance-creator/README.md) |
 | Texture Assigner | Unreal Editor Python | 按命名规范自动绑定贴图、材质实例和 Static Mesh | [`ue-texture-assigner/README.md`](ue-texture-assigner/README.md) |
